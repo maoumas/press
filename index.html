@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PackYT - Empaquetador de Producción</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f4f9; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1 { color: #cc0000; text-align: center; } /* Rojo YouTube */
+        h2 { border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 30px; font-size: 1.2em; }
+        
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-weight: bold; margin-bottom: 8px; }
+        input[type="text"], textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;}
+        textarea { height: 100px; }
+        
+        .file-upload { border: 2px dashed #ccc; padding: 20px; text-align: center; border-radius: 5px; transition: 0.3s; }
+        .file-upload:hover { border-color: #cc0000; background: #fff5f5; }
+        
+        button#downloadBtn {
+            background-color: #cc0000; color: white; border: none; padding: 15px 30px; 
+            font-size: 18px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 20px;
+            font-weight: bold; transition: 0.3s;
+        }
+        button#downloadBtn:hover { background-color: #990000; }
+        
+        .status { margin-top: 15px; text-align: center; font-style: italic; color: #666; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📦 PackYT Generator</h1>
+    <p style="text-align: center;">Prepara el paquete para post-producción</p>
+
+    <h2>1. Información del Video</h2>
+    <div class="form-group">
+        <label>Nombre del Episodio (sin espacios preferiblemente):</label>
+        <input type="text" id="projectName" placeholder="Ej: Ep45_InteligenciaArtificial">
+    </div>
+
+    <h2>2. Teleprompter (HTML)</h2>
+    <div class="form-group">
+        <label>Sube tu archivo .html generado:</label>
+        <input type="file" id="teleprompterFile" accept=".html, .htm" class="file-upload">
+    </div>
+
+    <h2>3. Thumbnail / Portada</h2>
+    <div class="form-group">
+        <label>Imagen del Thumbnail (JPG/PNG):</label>
+        <input type="file" id="thumbnailFile" accept="image/*" class="file-upload">
+    </div>
+
+    <h2>4. Material Visual (Secuencia)</h2>
+    <div class="form-group">
+        <label>Selecciona TODOS los videos cortos e imágenes de la presentación:</label>
+        <input type="file" id="assetsFiles" multiple class="file-upload">
+        <small>💡 Tip: Nombra tus archivos "01_intro", "02_grafico" para que el editor sepa el orden.</small>
+    </div>
+
+    <h2>5. Instrucciones de Secuencia</h2>
+    <div class="form-group">
+        <label>Notas para el editor (Orden, cortes, música):</label>
+        <textarea id="instructions" placeholder="Hola, por favor usa la imagen 01 en el segundo 15..."></textarea>
+    </div>
+
+    <button id="downloadBtn" onclick="generatePack()">🚀 EMPAQUETAR Y DESCARGAR ZIP</button>
+    <div id="statusMsg" class="status"></div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
