@@ -1,0 +1,2 @@
+# press
+translated press news
