@@ -1,55 +1,196 @@
 <!DOCTYPE html>
-<html lang="de"> <head>
+<html lang="de">
+<head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PackYT Studio</title>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     
     <style>
-        :root { --yt-red: #cc0000; --bg: #f9f9f9; --text: #0f0f0f; }
-        body { font-family: 'Roboto', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-        
-        /* Header & Nav */
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .brand { font-size: 24px; font-weight: bold; display: flex; align-items: center; gap: 10px; }
-        .brand i { color: var(--yt-red); }
-        .lang-switch button { border: 1px solid #ccc; background: white; cursor: pointer; padding: 5px 10px; font-size: 12px; }
-        .lang-switch button.active { background: var(--yt-red); color: white; border-color: var(--yt-red); }
+        /* --- ESTÉTICA YOUTUBE DARK MODE --- */
+        :root {
+            --bg-color: #0f0f0f;
+            --surface-color: #1e1e1e;
+            --text-primary: #f1f1f1;
+            --text-secondary: #aaaaaa;
+            --accent-color: #3ea6ff; /* Azul YT o Rojo #cc0000 */
+            --separator: #2a2a2a;
+        }
 
-        /* Vistas */
-        .hidden { display: none; }
-        
-        /* VISTA 1: TABLA DASHBOARD */
-        .dashboard-controls { display: flex; justify-content: space-between; margin-bottom: 20px; }
-        .btn-primary { background: var(--yt-red); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .btn-primary:hover { background: #990000; }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            padding-bottom: 80px; /* Espacio para botón flotante */
+        }
 
-        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background: #f1f1f1; font-size: 12px; text-transform: uppercase; color: #606060; }
+        /* HEADER */
+        header {
+            background-color: rgba(15, 15, 15, 0.95);
+            padding: 12px 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--separator);
+        }
+        .brand { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .brand i { color: #ff0000; }
         
-        .thumb-col img { width: 120px; height: 68px; object-fit: cover; border-radius: 4px; background: #eee; }
-        .video-info h4 { margin: 0 0 5px 0; font-size: 16px; }
-        .video-info p { margin: 0; color: #606060; font-size: 13px; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .input-link { border: 1px solid #ddd; padding: 5px; border-radius: 4px; width: 100%; font-size: 12px;}
+        .lang-switch button {
+            background: transparent; border: none; color: var(--text-secondary);
+            font-weight: bold; cursor: pointer; padding: 5px; font-size: 12px;
+        }
+        .lang-switch button.active { color: var(--text-primary); text-decoration: underline; }
 
-        /* VISTA 2: PACKAGER FORM */
-        .editor-container { background: white; max-width: 800px; margin: 0 auto; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .back-btn { cursor: pointer; color: #606060; margin-bottom: 15px; display: inline-block; }
+        /* LISTA DE VIDEOS (Tipo YouTube Mobile) */
+        .video-list { display: flex; flex-direction: column; }
+        
+        .video-card {
+            display: flex;
+            padding: 12px 0;
+            margin: 0 12px;
+            border-bottom: 1px solid var(--separator); /* Línea sutil separadora */
+            position: relative;
+        }
+
+        /* Columna Izquierda: Thumbnail */
+        .card-thumb {
+            width: 160px;
+            min-width: 160px;
+            height: 90px;
+            border-radius: 8px;
+            background-color: #2a2a2a;
+            overflow: hidden;
+            position: relative;
+            margin-right: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .card-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .card-thumb i { color: #555; font-size: 24px; }
+        
+        /* Columna Derecha: Info */
+        .card-info { flex: 1; display: flex; flex-direction: column; padding-right: 20px; }
+        .card-title {
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1.2;
+            margin-bottom: 4px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .card-meta { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
+        
+        /* Botón de 3 Puntos */
+        .btn-more {
+            position: absolute;
+            top: 12px;
+            right: -8px;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        /* MENÚ DESPLEGABLE (Puntos) */
+        .action-menu {
+            position: absolute;
+            right: 10px;
+            top: 40px;
+            background: var(--surface-color);
+            border-radius: 8px;
+            padding: 5px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            z-index: 50;
+            display: none;
+            width: 150px;
+        }
+        .action-menu.show { display: block; }
+        .action-item {
+            padding: 10px 15px;
+            font-size: 14px;
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .action-item:hover { background-color: #333; }
+
+        /* FAB (Floating Action Button) - El botón "+" de YouTube */
+        .fab {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #222;
+            border: 1px solid #333;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 28px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            cursor: pointer;
+            z-index: 90;
+        }
+        .fab:active { background-color: #333; }
+
+        /* VISTA EDITOR (Formulario) */
+        #view-packager { padding: 20px; }
+        .editor-header { display: flex; align-items: center; margin-bottom: 20px; }
+        .back-icon { font-size: 24px; margin-right: 15px; cursor: pointer; padding: 5px; }
+        
         .form-group { margin-bottom: 20px; }
-        label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 14px; }
-        input[type="text"], textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        .file-drop { border: 2px dashed #ccc; padding: 20px; text-align: center; border-radius: 4px; background: #fafafa; }
-        .file-drop:hover { border-color: var(--yt-red); background: #fff5f5; }
+        label { display: block; color: var(--text-secondary); font-size: 12px; margin-bottom: 8px; text-transform: uppercase; font-weight: bold; }
+        input[type="text"], textarea {
+            width: 100%; padding: 12px; background: #222; border: 1px solid #333;
+            color: white; border-radius: 4px; box-sizing: border-box; font-size: 16px;
+        }
+        input:focus { border-color: var(--accent-color); outline: none; }
+        
+        .file-upload {
+            background: #222; border: 1px dashed #444; padding: 20px;
+            text-align: center; border-radius: 8px; color: var(--text-secondary);
+        }
+        
+        .btn-main {
+            background: var(--text-primary); color: black; border: none;
+            width: 100%; padding: 15px; border-radius: 25px;
+            font-weight: bold; font-size: 16px; margin-top: 10px;
+        }
 
+        /* MODAL para editar link */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 200;
+            display: none; align-items: center; justify-content: center;
+        }
+        .modal { background: var(--surface-color); padding: 20px; border-radius: 12px; width: 80%; max-width: 300px; }
+        .modal h3 { margin-top: 0; font-size: 16px; }
+
+        /* Utilidades */
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
 <header>
-    <div class="brand"><i class="fab fa-youtube"></i> PackYT Studio</div>
+    <div class="brand"><i class="fab fa-youtube"></i> Studio</div>
     <div class="lang-switch">
         <button onclick="setLang('de')" id="btn-de" class="active">DE</button>
         <button onclick="setLang('es')" id="btn-es">ES</button>
@@ -58,59 +199,55 @@
 </header>
 
 <div id="view-dashboard">
-    <div class="dashboard-controls">
-        <h2 data-i18n="videoList">Videoliste</h2>
-        <div>
-            <button class="btn-primary" onclick="openPackager()" data-i18n="newProject">+ Neues Projekt</button>
+    <div class="video-list" id="videoListContainer">
         </div>
-    </div>
-
-    <table id="projectsTable">
-        <thead>
-            <tr>
-                <th data-i18n="colThumb">Miniaturansicht</th>
-                <th data-i18n="colVideo">Video</th>
-                <th onclick="sortTable('sentDate')" style="cursor:pointer" data-i18n="colSentDate">Gesendet am ↕</th>
-                <th data-i18n="colLink">YouTube Link</th>
-            </tr>
-        </thead>
-        <tbody id="tableBody">
-            </tbody>
-    </table>
+    
+    <div class="fab" onclick="openPackager()">+</div>
 </div>
 
 <div id="view-packager" class="hidden">
-    <div class="editor-container">
-        <div class="back-btn" onclick="openDashboard()">← <span data-i18n="back">Zurück</span></div>
-        <h1 data-i18n="packagerTitle">Neues Paket erstellen</h1>
-        
-        <div class="form-group">
-            <label data-i18n="lblTitle">Titel des Programms</label>
-            <input type="text" id="pTitle">
-        </div>
+    <div class="editor-header">
+        <div class="back-icon" onclick="openDashboard()"><i class="fas fa-arrow-left"></i></div>
+        <h2 style="margin:0; font-size:18px;" data-i18n="packagerTitle">Neues Paket</h2>
+    </div>
 
-        <div class="form-group">
-            <label data-i18n="lblDesc">Kurzbeschreibung</label>
-            <input type="text" id="pDesc">
-        </div>
+    <div class="form-group">
+        <label data-i18n="lblTitle">Titel</label>
+        <input type="text" id="pTitle" placeholder="Video Title...">
+    </div>
 
-        <div class="form-group">
-            <label data-i18n="lblTele">Teleprompter (HTML)</label>
-            <input type="file" id="fTele" accept=".html" class="file-drop">
-        </div>
+    <div class="form-group">
+        <label data-i18n="lblDesc">Beschreibung</label>
+        <input type="text" id="pDesc" placeholder="Short description...">
+    </div>
 
-        <div class="form-group">
-            <label data-i18n="lblThumb">Thumbnail (JPG/PNG)</label>
-            <input type="file" id="fThumb" accept="image/*" class="file-drop" onchange="previewThumb(this)">
-            <img id="thumbPreview" style="max-width: 100px; display: none; margin-top: 10px; border-radius: 4px;">
-        </div>
+    <div class="form-group">
+        <label data-i18n="lblTele">Teleprompter HTML</label>
+        <input type="file" id="fTele" accept=".html" class="file-upload">
+    </div>
 
-        <div class="form-group">
-            <label data-i18n="lblAssets">Bilder & Video-Clips</label>
-            <input type="file" id="fAssets" multiple class="file-drop">
-        </div>
+    <div class="form-group">
+        <label data-i18n="lblThumb">Thumbnail</label>
+        <input type="file" id="fThumb" accept="image/*" class="file-upload" onchange="previewThumb(this)">
+        <img id="thumbPreview" style="width:100%; margin-top:10px; display:none; border-radius:8px;">
+    </div>
 
-        <button class="btn-primary" style="width:100%" onclick="generateZip()" data-i18n="btnGenerate">📦 Paket Erstellen & Speichern</button>
+    <div class="form-group">
+        <label data-i18n="lblAssets">Videos & Images</label>
+        <input type="file" id="fAssets" multiple class="file-upload">
+    </div>
+
+    <button class="btn-main" onclick="generateZip()" data-i18n="btnGenerate">PACKEN & DOWNLOAD</button>
+</div>
+
+<div id="linkModal" class="modal-overlay">
+    <div class="modal">
+        <h3 data-i18n="modalTitle">YouTube Link bearbeiten</h3>
+        <input type="text" id="modalLinkInput" placeholder="https://youtu.be/..." style="margin-bottom:15px;">
+        <div style="text-align:right;">
+            <button onclick="closeModal()" style="background:none; border:none; color:#aaa; padding:10px;">Cancel</button>
+            <button onclick="saveLink()" style="background:none; border:none; color:#3ea6ff; font-weight:bold; padding:10px;">SAVE</button>
+        </div>
     </div>
 </div>
 
