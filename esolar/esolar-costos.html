@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Teleprompter Live</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        body { background-color: black; color: white; font-family: 'Inter', sans-serif; margin:0; overflow-x:hidden; cursor: pointer; }
+        #script-container { padding: 20px; padding-top: 20vh; padding-bottom: 60vh; max-width: 800px; margin: 0 auto; line-height: 1.5; opacity: 1; }
+        .speaker-text { font-size: 2.8rem; font-weight: 600; color: #ffffff; margin-bottom: 1.5rem; }
+        .instruction { font-size: 1.5rem; color: #FCD34D; font-style: italic; background: #333; padding: 10px; border-left: 4px solid #F59E0B; margin-bottom: 2rem; }
+        .timestamp { font-size: 2rem; font-weight: 800; color: #60A5FA; border-top: 1px solid #444; padding-top: 2rem; margin-top: 3rem; text-transform: uppercase; }
+        #controls { position: fixed; bottom: 0; left: 0; right: 0; background-color: #111; border-top: 1px solid #333; padding: 10px; padding-bottom: env(safe-area-inset-bottom, 10px); display: flex; align-items: center; gap: 8px; z-index: 9999; justify-content: center; overflow-x: auto; cursor: default; }
+        @media (max-width: 600px) {
+            #controls { justify-content: flex-start; padding-left: 10px; padding-right: 10px; }
+            .btn-main, #save-btn, #reset-btn { height: 38px !important; min-width: 38px !important; padding: 0 10px !important; }
+            #play-pause-btn { min-width: auto !important; padding: 0 15px !important; font-size: 0.8rem; }
+            .stepper-btn { width: 34px !important; height: 34px !important; }
+            .value-display { font-size: 0.8rem; min-width: 20px; }
+            .speaker-text { font-size: 2rem; }
+        }
+        .btn-main { height: 48px; padding: 0 20px; border-radius: 8px; font-weight: 700; border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition:0.2s; }
+        #play-pause-btn { background-color: #10B981; min-width: 100px; } 
+        #play-pause-btn.paused { background-color: #EF4444; } 
+        #reset-btn { background-color: #374151; }
+        #save-btn { background-color: #7C3AED; }
+        .control-group { display: flex; align-items: center; gap: 2px; background: #222; padding: 3px; border-radius: 8px; border: 1px solid #444; flex-shrink: 0; }
+        .stepper-btn { width: 44px; height: 44px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; color: white; background: transparent; }
+        .theme-speed .stepper-btn { background: #1E40AF; }
+        .theme-font .stepper-btn { background: #92400E; }
+        .value-display { font-family: monospace; font-weight: bold; min-width: 30px; text-align: center; }
+        .svg-icon { width: 20px; height: 20px; fill: currentColor; }
+    </style>
+</head>
+<body>
+  <div id="script-container"></div>
+  <div id="controls">
+    <button id="play-pause-btn" class="btn-main">START</button>
+    <button id="reset-btn" class="btn-main" title="Inicio"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg></button>
+    <div class="control-group theme-speed"><button class="stepper-btn" id="s-">-</button><div class="value-display" id="s-val">3</div><button class="stepper-btn" id="s+">+</button></div>
+    <div class="control-group theme-font"><button class="stepper-btn" id="f-">-</button><div class="value-display" id="f-val">3</div><button class="stepper-btn" id="f+">+</button></div>
+    <button id="save-btn" class="btn-main" title="Guardar"><svg class="svg-icon" viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg></button>
+  </div>
+  <script>
+    const data = JSON.parse('[{"type":"title","content":"¡Bienvenidos a @esolarone! Tu Independencia Energética Comienza Aquí"},{"type":"instruction","content":"Anotación: El presentador entra con mucha energía, sonriendo a la cámara. De fondo se ve el carrito de mano con el sistema medio montado.*"},{"type":"text","content":"¡Hola, familia de @esolarone! Qué alegría que estén hoy con nosotros. Si alguna vez han soñado con decirle adiós a las facturas de luz o simplemente quieren estar preparados para cuando la red falle, hoy es su día de suerte."},{"type":"text","content":"Hoy vamos a construir algo increíble: un sistema solar \\"off-grid\\" de 5,000 vatios, ¡totalmente móvil! Sí, lo escucharon bien. Todo el poder de una cabaña o una casa pequeña montado sobre un carrito que pueden mover a donde quieran. Vamos a desglosar cada tornillo, cada cable y, lo más importante, cuánto les va a costar realmente en este 2025. ¡Pónganse cómodos porque hoy nos convertimos en maestros de la energía solar!"},{"type":"title","content":"El Corazón del Sistema: Los Componentes"},{"type":"instruction","content":"Anotación: Mostrar en pantalla una lista gráfica de los materiales mientras el presentador los señala.*"},{"type":"text","content":"Para que este monstruo de 5,000W cobre vida, necesitamos piezas clave. No se preocupen, les daré precios aproximados para que vayan sacando la cuenta."},{"type":"instruction","content":"**La Base Móvil:** Necesitamos un carrito de mano resistente. El clásico de Harbor Freight cuesta unos **$79**. Es la columna vertebral de nuestro proyecto."},{"type":"instruction","content":"**El Cerebro (Inversor Todo-en-Uno):** Este es un equipo de 5,000W que hace tres cosas a la vez: es inversor, controlador de carga solar y cargador de baterías. Un equipo así ronda entre los **$1,000 y $3,000**, dependiendo de la marca."},{"type":"instruction","content":"**El Tanque de Energía (La Batería):** Aquí es donde vive la magia. Necesitamos una batería de 48V. Si quieren algo serio de litio (LiFePO4) para ser totalmente independientes, el costo puede ir desde los **$7,000 hasta los $18,000**. Pero ojo, si están empezando, hay opciones de baterías de 12V desde los **$489** que pueden conectar en serie."},{"type":"instruction","content":"**Los Paneles (Nuestros Pulmones):** Para este sistema, recomendamos paneles como los Callsun de 200W. Un kit de dos paneles cuesta unos **$300**. Para que este sistema rinda al máximo, necesitaremos entre 7 y 14 paneles."},{"type":"title","content":"Paso 1: Montaje y Estructura"},{"type":"instruction","content":"Anotación: El presentador se acerca al carrito y muestra cómo asegurar la batería.*"},{"type":"text","content":"Primero lo primero: la seguridad. Vamos a colocar nuestra batería de 48V en la base del carrito. Es pesada, así que usen una **correa de trinquete (ratchet strap)** para que no se mueva ni un milímetro."},{"type":"text","content":"Encima de la batería, vamos a montar nuestro inversor \\"Todo-en-Uno\\". Este aparato es genial porque simplifica todo. En lugar de tener cables por toda la habitación, todo llega a esta caja. Lo atornillamos firmemente al respaldo del carrito y ¡listo!, ya tenemos nuestra unidad móvil de potencia."},{"type":"title","content":"Paso 2: Conexiones Eléctricas (¡Sin Miedo!)"},{"type":"instruction","content":"Anotación: Primer plano de los cables rojo y negro.*"},{"type":"text","content":"Ahora vamos con los cables de la batería. Recuerden: **Rojo es positivo, Negro es negativo**. Usaremos cables de calibre grueso, de unos 2 pies de largo."},{"type":"instruction","content":"Conectamos primero al inversor. Introducimos el cable rojo en el terminal positivo y apretamos bien el tornillo. Hacemos lo mismo con el negro."},{"type":"instruction","content":"**Truco de experto:** Antes de conectar a la batería, asegúrense de que todo esté apagado. El interruptor de la batería debe mostrar el color verde (apagado). Una vez conectados los cables, ahora sí, pasamos al rojo (encendido)."},{"type":"title","content":"Paso 3: Capturando el Sol"},{"type":"instruction","content":"Anotación: Mostrar un panel solar y explicar el voltaje.*"},{"type":"text","content":"Para conectar los paneles, necesitamos un **interruptor de desconexión solar**. Esto es vital por seguridad. Los paneles en serie pueden generar voltajes peligrosos, ¡hasta 500V!"},{"type":"text","content":"Para este inversor de 5,000W, necesitamos que el voltaje llegue al menos a **200V** para un rendimiento óptimo. Si usan paneles de 28V, necesitarán conectar al menos 7 paneles en serie (positivo de uno con negativo del otro). Es como una cadena de luces de Navidad, pero con mucha más potencia."},{"type":"title","content":"Paso 4: Distribución de la Energía"},{"type":"instruction","content":"Anotación: Mostrar una regleta y una caja de enchufes profesional.*"},{"type":"text","content":"¿Cómo usamos la electricidad? Tienen dos opciones:"},{"type":"text","content":"1.  **La fácil:** Una regleta de enchufes sencilla. Es segura, pero limita la salida a unos 1,800W."},{"type":"text","content":"2.  **La profesional:** Instalar un centro de carga con disyuntores. Si quieren usar los 5,000W completos para un aire acondicionado o refrigerador, esta es la vía."},{"type":"text","content":"También instalaremos un cable de repuesto para herramientas de 9 pies. Esto nos permite enchufar nuestro sistema a la pared de la casa para cargar las baterías si no hubo sol durante el día. ¡Es como un sistema de respaldo infinito!"},{"type":"title","content":"Hablemos de Dinero: ¿Cuánto Cuesta Realmente?"},{"type":"instruction","content":"Anotación: Gráfico comparativo de costos en pantalla.*"},{"type":"text","content":"Sé que están esperando el número final. Si lo construyen ustedes mismos (DIY), el costo total estimado de este sistema de 5,000W con almacenamiento de litio de alta calidad oscila entre los **$9,500 y $23,000**."},{"type":"text","content":"¿Parece mucho? Comparemos. En Florida, una instalación profesional de 5 kW promedia los **$10,926**, ¡y eso es sin las baterías grandes que nosotros estamos incluyendo! La ventaja de nuestro sistema es que es móvil y lo diseñaron ustedes pieza por pieza."},{"type":"title","content":"Incentivos y Leyes: ¡El Momento es Ahora!"},{"type":"instruction","content":"Anotación: El presentador se pone serio pero optimista.*"},{"type":"text","content":"¡Atención aquí! Si viven en Estados Unidos, específicamente en Florida, hay noticias importantes. El **Crédito Fiscal Federal** del 30% es un regalo de miles de dólares, pero ¡cuidado!, está programado para reducirse o terminar después del **31 de diciembre de 2025**."},{"type":"text","content":"Además, en Florida, las nuevas leyes ahora obligan a que los permisos solares se aprueben en **máximo 5 días hábiles**. ¡Ya no hay excusas de burocracia! También estamos exentos de impuestos sobre las ventas en equipos solares y nuestra propiedad no subirá de impuestos por añadir estos paneles."},{"type":"title","content":"Conclusión: Tu Futuro Eléctrico"},{"type":"instruction","content":"Anotación: El presentador da un mensaje final inspirador.*"},{"type":"text","content":"Construir este sistema es como armar un rompecabezas de energía. Empezamos con un carrito de $79 y terminamos con una planta eléctrica capaz de mantener tu comida fría y tus luces encendidas cuando el mundo se oscurece."},{"type":"text","content":"No es solo cables y tornillos, es **libertad**. Gracias por acompañarnos en @esolarone. Si este video les ayudó, ya saben qué hacer: denle un buen \\"like\\", suscríbanse y compartan este conocimiento. ¡El sol sale para todos, pero solo algunos sabemos cómo atraparlo!"},{"type":"text","content":"¡Nos vemos en el próximo video, familia!"},{"type":"instruction","content":"Anotación: Música animada de salida mientras el presentador mueve el carrito hacia el horizonte.*"}]');
+    const cont = document.getElementById('script-container');
+    data.forEach(i => {
+        let el = document.createElement(i.type==='title'?'h2':i.type==='instruction'?'p':'div');
+        el.className = i.type==='title'?'timestamp':i.type==='instruction'?'instruction':'speaker-text';
+        el.innerText = i.content; cont.appendChild(el);
+    });
+    let state = { speed:3, font:3, playing:false };
+    let anim;
+    function update() {
+        document.getElementById('s-val').innerText = state.speed;
+        document.getElementById('f-val').innerText = state.font;
+        const fs = 20 + (state.font * 4);
+        document.querySelectorAll('.speaker-text').forEach(e => e.style.fontSize = fs+'px');
+    }
+    function loop() {
+        if(!state.playing) return;
+        window.scrollBy(0, state.speed * 0.4);
+        anim = requestAnimationFrame(loop);
+    }
+    function togglePlay() {
+        state.playing = !state.playing;
+        const btn = document.getElementById('play-pause-btn');
+        btn.innerText = state.playing ? "PAUSE" : "START";
+        btn.classList.toggle('paused', state.playing);
+        if(state.playing) loop(); else cancelAnimationFrame(anim);
+    }
+    document.getElementById('play-pause-btn').onclick = (e) => { e.stopPropagation(); togglePlay(); };
+    document.getElementById('reset-btn').onclick = (e) => { e.stopPropagation(); window.scrollTo(0,0); state.playing=false; cancelAnimationFrame(anim); const btn = document.getElementById('play-pause-btn'); btn.innerText="START"; btn.classList.remove('paused'); };
+    document.body.onclick = (e) => { if (!e.target.closest('#controls')) togglePlay(); };
+    document.getElementById('controls').onclick = (e) => { e.stopPropagation(); };
+    document.getElementById('s-').onclick = () => { if(state.speed>0) state.speed--; update(); };
+    document.getElementById('s+').onclick = () => { if(state.speed<20) state.speed++; update(); };
+    document.getElementById('f-').onclick = () => { if(state.font>0) state.font--; update(); };
+    document.getElementById('f+').onclick = () => { if(state.font<15) state.font++; update(); };
+    document.getElementById('save-btn').onclick = () => {
+        const blob = new Blob([document.documentElement.outerHTML], {type:'text/html'});
+        const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'teleprompter-recording.html';
+        document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    };
+    setTimeout(() => { if(!state.playing) togglePlay(); }, 2000);
+    update();
+  </script>
+</body>
+</html>
